@@ -21,91 +21,93 @@ df.columns = ['Liquorkart_Product_Name', 'Liquorkart_SKU', 'Liquorkart_URL',
 
 # INDIVIDUAL
 
-firstchoiceliquor_headers = {
-    'authority': 'www.firstchoiceliquor.com.au',
-    'accept': 'application/json, text/plain, */*',
-    'accept-language': 'en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7',
-    # Requests sorts cookies= alphabetically
-    # 'cookie': '__uzma=7eac7273-bbc1-49ed-9417-5159ecb6661b; __uzmb=1652059114; SSID=CQCRHx0AAAAAAAD-a3hi5wpA7-preGIWAAAAAAAAAAAAKZ2BYgC7SA; SSSC=5.G7095539955602033383.22|0.0; SSRT=KZ2BYgQBAA; AMCVS_0B3D037254C7DE490A4C98A6%40AdobeOrg=1; SameSite=None; CL_FCLM_02_UBT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX3JvbGUiOiJBbm9ueW1vdXMiLCJjX2lkIjoiezkxMTg0NWRmLWVjYmQtNDc5MC1iOTY5LWE0MTFjYTQ4NzcyNX0iLCJjX2JyYW5kIjoiZmMiLCJjX2F4X2lkIjoiIiwibmJmIjoxNjUyNjYxNTQ3LCJleHAiOjE2NTI2OTAzNDcsImlhdCI6MTY1MjY2MTU0NywiaXNzIjoic2VsZiIsImF1ZCI6Imh0dHBzOi8vd3d3LmNvbGVzbGlxdW9yLmNvbS5hdSJ9.7v9Y_Z8PHid5uESXStFZ-TyrHWqRyBVLBJwWVXvLNNk; CL_FCLM_02_ULN=; CL_FCLM_02_UFN=; CL_FCLM_02_UAID=; CL_FCLM_02_UPOA=false; CL_FCLM_02_UDP=false; ADRUM_BTa=R:37|g:e3ef1ca1-118f-483a-b431-c02907775b5f|n:coles-prod_e0c95006-bd91-4181-bc2e-caaca584feda; ADRUM_BT1=R:37|i:490531|e:169; BVImplmain_site=18596; __uzmd=1652661556; KP_UIDz-ssn=03XkQ42UAkzUKcwBbXLJdnInWHRf4eedMVQwTcWfZ4eBfhMZzhoWjdEE0YJW6TzfvJ1Cg6eldr6rRPBdEAkVGDhhLYZ7xD4CteAhtSiW6oZZGPGIigIUaYP4O6aE44ajC3qiZmdyn60N6HsXo71vaPQeeR1; KP_UIDz=03XkQ42UAkzUKcwBbXLJdnInWHRf4eedMVQwTcWfZ4eBfhMZzhoWjdEE0YJW6TzfvJ1Cg6eldr6rRPBdEAkVGDhhLYZ7xD4CteAhtSiW6oZZGPGIigIUaYP4O6aE44ajC3qiZmdyn60N6HsXo71vaPQeeR1; AMCV_0B3D037254C7DE490A4C98A6%40AdobeOrg=-432600572%7CMCIDTS%7C19129%7CMCMID%7C65101274210646873479190368919597715077%7CMCOPTOUT-1652668757s%7CNONE%7CvVersion%7C4.5.2; __uzmc=70318142087385',
-    'referer': 'https://www.firstchoiceliquor.com.au/',
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'same-origin',
-    'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
-}
-
-price=[]
-link=[]
-firstchoice = df[['firstchoiceliquor']]
-firstchoice.dropna(inplace=True)
-firstchoice = firstchoice[firstchoice['firstchoiceliquor'].str.match('https://www.firstchoiceliquor.com.au/')]
-
-
-s = requests.Session()
-s.headers.update({'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'})
-
-for i in firstchoice['firstchoiceliquor']:
-    print(i)
-    link.append(i)
-    pid = i.split("/")
-    cat  = pid[3]
-    print(cat)
-    pid = pid[-1]
-    pid = pid.split("_")
-    pid = pid[-1]
-    if  "?uom=" in pid:
-        pid = pid.replace('?uom=','_')
-        pid=pid.lower()
-        print(pid)
-    try:
-        if cat == "spirits":
-            url = 'https://www.firstchoiceliquor.com.au/api/products/fc/nsw/spirits/' + pid
-            print(url)
-            soup = BeautifulSoup(s.get(url,headers=firstchoiceliquor_headers).text,"html.parser")
-            site_json=json.loads(soup.text)
-            if site_json['product']is not None:
-                if site_json['product']['stock']['delivery'] == "No Stock":
-                    print('OOS')
-                    price.append(0)
-                else:
-                    print(site_json['product']['price']['normal'])
-                    price.append(site_json['product']['price']['normal'])
-            else:
-                print('None')
-                price.append(0)
-        elif cat == "beer":
-            url = "https://www.firstchoiceliquor.com.au/api/products/fc/nsw/beer/" + pid
-            soup = BeautifulSoup(s.get(url,headers=firstchoiceliquor_headers).text,"html.parser")
-            site_json=json.loads(soup.text)
-            if site_json['product']is not None:
-                if site_json['product']['stock']['delivery'] == "No Stock":
-                    print('OOS')
-                    price.append(0)
-                else:
-                    print(site_json['product']['price']['normal'])
-                    price.append(site_json['product']['price']['normal'])
-            else:
-                print('None')
-                price.append(0)
-        else:
-            print('OOS or bad connection')
-            price.append(0)
-    except json.JSONDecodeError:
-        print('Sheild Square Captcha')
-        price.append(0)
-        break
-    
-      
-firstchoice['firstchoiceliquor_price'] = price
-res = pd.DataFrame()
-res['firstchoiceliquor'] = firstchoice['firstchoiceliquor']
-res['firstchoiceliquor_price'] = firstchoice['firstchoiceliquor_price']
-
-
-
-
-df = df.join(firstchoice.set_index('firstchoiceliquor'), on='firstchoiceliquor')                                                                             
-df = df.drop_duplicates()
+# =============================================================================
+# firstchoiceliquor_headers = {
+#     'authority': 'www.firstchoiceliquor.com.au',
+#     'accept': 'application/json, text/plain, */*',
+#     'accept-language': 'en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7',
+#     # Requests sorts cookies= alphabetically
+#     # 'cookie': '__uzma=7eac7273-bbc1-49ed-9417-5159ecb6661b; __uzmb=1652059114; SSID=CQCRHx0AAAAAAAD-a3hi5wpA7-preGIWAAAAAAAAAAAAKZ2BYgC7SA; SSSC=5.G7095539955602033383.22|0.0; SSRT=KZ2BYgQBAA; AMCVS_0B3D037254C7DE490A4C98A6%40AdobeOrg=1; SameSite=None; CL_FCLM_02_UBT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX3JvbGUiOiJBbm9ueW1vdXMiLCJjX2lkIjoiezkxMTg0NWRmLWVjYmQtNDc5MC1iOTY5LWE0MTFjYTQ4NzcyNX0iLCJjX2JyYW5kIjoiZmMiLCJjX2F4X2lkIjoiIiwibmJmIjoxNjUyNjYxNTQ3LCJleHAiOjE2NTI2OTAzNDcsImlhdCI6MTY1MjY2MTU0NywiaXNzIjoic2VsZiIsImF1ZCI6Imh0dHBzOi8vd3d3LmNvbGVzbGlxdW9yLmNvbS5hdSJ9.7v9Y_Z8PHid5uESXStFZ-TyrHWqRyBVLBJwWVXvLNNk; CL_FCLM_02_ULN=; CL_FCLM_02_UFN=; CL_FCLM_02_UAID=; CL_FCLM_02_UPOA=false; CL_FCLM_02_UDP=false; ADRUM_BTa=R:37|g:e3ef1ca1-118f-483a-b431-c02907775b5f|n:coles-prod_e0c95006-bd91-4181-bc2e-caaca584feda; ADRUM_BT1=R:37|i:490531|e:169; BVImplmain_site=18596; __uzmd=1652661556; KP_UIDz-ssn=03XkQ42UAkzUKcwBbXLJdnInWHRf4eedMVQwTcWfZ4eBfhMZzhoWjdEE0YJW6TzfvJ1Cg6eldr6rRPBdEAkVGDhhLYZ7xD4CteAhtSiW6oZZGPGIigIUaYP4O6aE44ajC3qiZmdyn60N6HsXo71vaPQeeR1; KP_UIDz=03XkQ42UAkzUKcwBbXLJdnInWHRf4eedMVQwTcWfZ4eBfhMZzhoWjdEE0YJW6TzfvJ1Cg6eldr6rRPBdEAkVGDhhLYZ7xD4CteAhtSiW6oZZGPGIigIUaYP4O6aE44ajC3qiZmdyn60N6HsXo71vaPQeeR1; AMCV_0B3D037254C7DE490A4C98A6%40AdobeOrg=-432600572%7CMCIDTS%7C19129%7CMCMID%7C65101274210646873479190368919597715077%7CMCOPTOUT-1652668757s%7CNONE%7CvVersion%7C4.5.2; __uzmc=70318142087385',
+#     'referer': 'https://www.firstchoiceliquor.com.au/',
+#     'sec-fetch-dest': 'empty',
+#     'sec-fetch-mode': 'cors',
+#     'sec-fetch-site': 'same-origin',
+#     'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
+# }
+# 
+# price=[]
+# link=[]
+# firstchoice = df[['firstchoiceliquor']]
+# firstchoice.dropna(inplace=True)
+# firstchoice = firstchoice[firstchoice['firstchoiceliquor'].str.match('https://www.firstchoiceliquor.com.au/')]
+# 
+# 
+# s = requests.Session()
+# s.headers.update({'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'})
+# 
+# for i in firstchoice['firstchoiceliquor']:
+#     print(i)
+#     link.append(i)
+#     pid = i.split("/")
+#     cat  = pid[3]
+#     print(cat)
+#     pid = pid[-1]
+#     pid = pid.split("_")
+#     pid = pid[-1]
+#     if  "?uom=" in pid:
+#         pid = pid.replace('?uom=','_')
+#         pid=pid.lower()
+#         print(pid)
+#     try:
+#         if cat == "spirits":
+#             url = 'https://www.firstchoiceliquor.com.au/api/products/fc/nsw/spirits/' + pid
+#             print(url)
+#             soup = BeautifulSoup(s.get(url,headers=firstchoiceliquor_headers).text,"html.parser")
+#             site_json=json.loads(soup.text)
+#             if site_json['product']is not None:
+#                 if site_json['product']['stock']['delivery'] == "No Stock":
+#                     print('OOS')
+#                     price.append(0)
+#                 else:
+#                     print(site_json['product']['price']['normal'])
+#                     price.append(site_json['product']['price']['normal'])
+#             else:
+#                 print('None')
+#                 price.append(0)
+#         elif cat == "beer":
+#             url = "https://www.firstchoiceliquor.com.au/api/products/fc/nsw/beer/" + pid
+#             soup = BeautifulSoup(s.get(url,headers=firstchoiceliquor_headers).text,"html.parser")
+#             site_json=json.loads(soup.text)
+#             if site_json['product']is not None:
+#                 if site_json['product']['stock']['delivery'] == "No Stock":
+#                     print('OOS')
+#                     price.append(0)
+#                 else:
+#                     print(site_json['product']['price']['normal'])
+#                     price.append(site_json['product']['price']['normal'])
+#             else:
+#                 print('None')
+#                 price.append(0)
+#         else:
+#             print('OOS or bad connection')
+#             price.append(0)
+#     except json.JSONDecodeError:
+#         print('Sheild Square Captcha')
+#         price.append(0)
+#         break
+#     
+#       
+# firstchoice['firstchoiceliquor_price'] = price
+# res = pd.DataFrame()
+# res['firstchoiceliquor'] = firstchoice['firstchoiceliquor']
+# res['firstchoiceliquor_price'] = firstchoice['firstchoiceliquor_price']
+# 
+# 
+# 
+# 
+# df = df.join(firstchoice.set_index('firstchoiceliquor'), on='firstchoiceliquor')                                                                             
+# df = df.drop_duplicates()
+# =============================================================================
 
 #response = requests.get('https://www.firstchoiceliquor.com.au/api/products/fc/nsw/beer/3112135', headers=firstchoiceliquor_headers)
 
@@ -114,84 +116,86 @@ df = df.drop_duplicates()
 #%%
 # INDIVIDUAL
 
-vintage_headers = {
-    'authority': 'www.vintagecellars.com.au',
-    'accept': 'application/json, text/plain, */*',
-    'accept-language': 'en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7',
-    # Requests sorts cookies= alphabetically
-    # 'cookie': .'__uzma=44cbccff-7c7e-4466-9d40-43abb0f58198; __uzmb=1652063515; SSID=CQAhpx0AAAAAAAAffXhiNwiAFRt9eGIDAAAAAAAAAAAAI_p5YgDRZw; SSSC=4.G7095558785380386871.3|0.0; AMCVS_0B3D037254C7DE490A4C98A6%40AdobeOrg=1; CL_VC_02_UBT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX3JvbGUiOiJBbm9ueW1vdXMiLCJjX2lkIjoie2EwZGVhYzFhLTJkNWUtNDg0MS05ZGM4LTdiZWM0MmY3ZjVhOH0iLCJjX2JyYW5kIjoidmMiLCJjX2F4X2lkIjoiIiwibmJmIjoxNjUyMTYxMDYyLCJleHAiOjE2NTIxODk4NjIsImlhdCI6MTY1MjE2MTA2MiwiaXNzIjoic2VsZiIsImF1ZCI6Imh0dHBzOi8vd3d3LmNvbGVzbGlxdW9yLmNvbS5hdSJ9.-LdUi5FT1BPYej3YMOvyZrCJBoCpF1aciOzcsEEJhHY; CL_VC_02_ULN=; CL_VC_02_UFN=; CL_VC_02_UAID=; CL_VC_02_UPOA=false; CL_VC_02_UDP=false; BVImplmain_site=18425; SSRT=a_p5YgQBAA; AMCV_0B3D037254C7DE490A4C98A6%40AdobeOrg=-432600572%7CMCIDTS%7C19122%7CMCMID%7C01695494457066736202469769841636932060%7CMCOPTOUT-1652168332s%7CNONE%7CvVersion%7C4.5.2; __uzmd=1652161132; __uzmc=9167429579505; KP_UIDz-ssn=03WTNsaUCzpVQ6kUIJyedFEnIXCoIl8alcED2E4kizdQD5R1GYgLOg9P8cDbpA0EK70AneJsJ32jMIKzAgrjsry9ym2pIcIFnYL0nZsyNiYUA4HWcIPYwU3o5Io40vOQfTLcYpTihRseacfutIzSwbD1lLF; KP_UIDz=03WTNsaUCzpVQ6kUIJyedFEnIXCoIl8alcED2E4kizdQD5R1GYgLOg9P8cDbpA0EK70AneJsJ32jMIKzAgrjsry9ym2pIcIFnYL0nZsyNiYUA4HWcIPYwU3o5Io40vOQfTLcYpTihRseacfutIzSwbD1lLF',
-    'referer': 'https://www.vintagecellars.com.au/beer/ballistic-hawaiian-haze-pale-ale-can-375ml_3859630',
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'same-origin',
-    'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
-}
-price=[]
-link=[]
-vintage = df[['vintageceller']]
-vintage.dropna(inplace=True)
-vintage = vintage[vintage['vintageceller'].str.match('https://www.vintagecellars.com.au/')]
-
-s = requests.Session()
-s.headers.update({'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'})
-
-
-for i in vintage['vintageceller']:
-    print(i)
-    link.append(i)
-    pid = i.split("/")
-    cat  = pid[3]
-    print(cat)
-    pid = pid[-1]
-    pid = pid.split("_")
-    pid = pid[-1]
-    if  "?uom=" in pid:
-        pid = pid.replace('?uom=','_')
-        pid=pid.lower()
-        print(pid)
-    if cat == "spirits":
-        url = "https://www.vintagecellars.com.au/api/products/vc/nsw/spirits/" + pid
-        soup = BeautifulSoup(s.get(url,headers=vintage_headers).text,"html.parser")
-        site_json=json.loads(soup.text)
-        if site_json['product']is not None:
-            if site_json['product']['stock']['delivery'] == "No Stock":
-                print('OOS')
-                price.append(0)
-            else:
-                print(site_json['product']['price']['current'])
-                price.append(site_json['product']['price']['current'])
-        else:
-            print('None')
-            price.append(0)
-    elif cat == "beer":
-        url = "https://www.vintagecellars.com.au/api/products/vc/nsw/beer/" + pid
-        soup = BeautifulSoup(s.get(url,headers=vintage_headers).text,"html.parser")
-        site_json=json.loads(soup.text)
-        if site_json['product']is not None:
-            if site_json['product']['stock']['delivery'] == "No Stock":
-                print('OOS')
-                price.append(0)
-            else:
-                print(site_json['product']['price']['current'])
-                price.append(site_json['product']['price']['current'])
-        else:
-            print('None')
-            price.append(0)
-    else:
-        print('OOS or bad connection')
-        price.append(0)
-        
-        
-vintage['vintageceller_price'] = price
-res = pd.DataFrame()
-res['vintageceller'] = vintage['vintageceller']
-res['vintageceller_price'] = vintage['vintageceller_price']
-
-
-
-
-df = df.join(vintage.set_index('vintageceller'), on='vintageceller')                                                                             
-df = df.drop_duplicates()
+# =============================================================================
+# vintage_headers = {
+#     'authority': 'www.vintagecellars.com.au',
+#     'accept': 'application/json, text/plain, */*',
+#     'accept-language': 'en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7',
+#     # Requests sorts cookies= alphabetically
+#     # 'cookie': .'__uzma=44cbccff-7c7e-4466-9d40-43abb0f58198; __uzmb=1652063515; SSID=CQAhpx0AAAAAAAAffXhiNwiAFRt9eGIDAAAAAAAAAAAAI_p5YgDRZw; SSSC=4.G7095558785380386871.3|0.0; AMCVS_0B3D037254C7DE490A4C98A6%40AdobeOrg=1; CL_VC_02_UBT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjX3JvbGUiOiJBbm9ueW1vdXMiLCJjX2lkIjoie2EwZGVhYzFhLTJkNWUtNDg0MS05ZGM4LTdiZWM0MmY3ZjVhOH0iLCJjX2JyYW5kIjoidmMiLCJjX2F4X2lkIjoiIiwibmJmIjoxNjUyMTYxMDYyLCJleHAiOjE2NTIxODk4NjIsImlhdCI6MTY1MjE2MTA2MiwiaXNzIjoic2VsZiIsImF1ZCI6Imh0dHBzOi8vd3d3LmNvbGVzbGlxdW9yLmNvbS5hdSJ9.-LdUi5FT1BPYej3YMOvyZrCJBoCpF1aciOzcsEEJhHY; CL_VC_02_ULN=; CL_VC_02_UFN=; CL_VC_02_UAID=; CL_VC_02_UPOA=false; CL_VC_02_UDP=false; BVImplmain_site=18425; SSRT=a_p5YgQBAA; AMCV_0B3D037254C7DE490A4C98A6%40AdobeOrg=-432600572%7CMCIDTS%7C19122%7CMCMID%7C01695494457066736202469769841636932060%7CMCOPTOUT-1652168332s%7CNONE%7CvVersion%7C4.5.2; __uzmd=1652161132; __uzmc=9167429579505; KP_UIDz-ssn=03WTNsaUCzpVQ6kUIJyedFEnIXCoIl8alcED2E4kizdQD5R1GYgLOg9P8cDbpA0EK70AneJsJ32jMIKzAgrjsry9ym2pIcIFnYL0nZsyNiYUA4HWcIPYwU3o5Io40vOQfTLcYpTihRseacfutIzSwbD1lLF; KP_UIDz=03WTNsaUCzpVQ6kUIJyedFEnIXCoIl8alcED2E4kizdQD5R1GYgLOg9P8cDbpA0EK70AneJsJ32jMIKzAgrjsry9ym2pIcIFnYL0nZsyNiYUA4HWcIPYwU3o5Io40vOQfTLcYpTihRseacfutIzSwbD1lLF',
+#     'referer': 'https://www.vintagecellars.com.au/beer/ballistic-hawaiian-haze-pale-ale-can-375ml_3859630',
+#     'sec-fetch-dest': 'empty',
+#     'sec-fetch-mode': 'cors',
+#     'sec-fetch-site': 'same-origin',
+#     'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
+# }
+# price=[]
+# link=[]
+# vintage = df[['vintageceller']]
+# vintage.dropna(inplace=True)
+# vintage = vintage[vintage['vintageceller'].str.match('https://www.vintagecellars.com.au/')]
+# 
+# s = requests.Session()
+# s.headers.update({'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'})
+# 
+# 
+# for i in vintage['vintageceller']:
+#     print(i)
+#     link.append(i)
+#     pid = i.split("/")
+#     cat  = pid[3]
+#     print(cat)
+#     pid = pid[-1]
+#     pid = pid.split("_")
+#     pid = pid[-1]
+#     if  "?uom=" in pid:
+#         pid = pid.replace('?uom=','_')
+#         pid=pid.lower()
+#         print(pid)
+#     if cat == "spirits":
+#         url = "https://www.vintagecellars.com.au/api/products/vc/nsw/spirits/" + pid
+#         soup = BeautifulSoup(s.get(url,headers=vintage_headers).text,"html.parser")
+#         site_json=json.loads(soup.text)
+#         if site_json['product']is not None:
+#             if site_json['product']['stock']['delivery'] == "No Stock":
+#                 print('OOS')
+#                 price.append(0)
+#             else:
+#                 print(site_json['product']['price']['current'])
+#                 price.append(site_json['product']['price']['current'])
+#         else:
+#             print('None')
+#             price.append(0)
+#     elif cat == "beer":
+#         url = "https://www.vintagecellars.com.au/api/products/vc/nsw/beer/" + pid
+#         soup = BeautifulSoup(s.get(url,headers=vintage_headers).text,"html.parser")
+#         site_json=json.loads(soup.text)
+#         if site_json['product']is not None:
+#             if site_json['product']['stock']['delivery'] == "No Stock":
+#                 print('OOS')
+#                 price.append(0)
+#             else:
+#                 print(site_json['product']['price']['current'])
+#                 price.append(site_json['product']['price']['current'])
+#         else:
+#             print('None')
+#             price.append(0)
+#     else:
+#         print('OOS or bad connection')
+#         price.append(0)
+#         
+#         
+# vintage['vintageceller_price'] = price
+# res = pd.DataFrame()
+# res['vintageceller'] = vintage['vintageceller']
+# res['vintageceller_price'] = vintage['vintageceller_price']
+# 
+# 
+# 
+# 
+# df = df.join(vintage.set_index('vintageceller'), on='vintageceller')                                                                             
+# df = df.drop_duplicates()
+# =============================================================================
 #%%
 
 # SELECT ALL AND RUN
@@ -954,6 +958,9 @@ df = df.join(res.set_index('Liquorkart_URL'), on='Liquorkart_URL')
 df = df.drop_duplicates()
 
 #%%
+
+df['firstchoiceliquor_price'] = 0
+df['vintageceller_price'] = 0
 
 dff =df[['Liquorkart_Product_Name', 'Liquorkart_SKU','Liquorkart_Price', 'Hairydog_Price', 'Boozebud_price','Dan_murphy_price', 'Liquorland_price', 'BWS_Price', 'Nicks_price','firstchoiceliquor_price','vintageceller_price', 'kent_street_celler_price', 'paulsliquor_price',
 'mr_danks_liquor_price', 'drink_society_price',
